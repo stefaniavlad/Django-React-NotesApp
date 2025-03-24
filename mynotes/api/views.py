@@ -45,7 +45,7 @@ def getRoutes(request):
 
 @api_view(['GET'])
 def getNotes(request):
-    notes = Note.objects.all()
+    notes = Note.objects.all().order_by('-updated')
     serializer = NoteSerializer(notes, many=True)
     return Response(serializer.data)
 
@@ -55,3 +55,45 @@ def getNote(request, pk):
     notes = Note.objects.get(id=pk)
     serializer = NoteSerializer(notes, many=False)
     return Response(serializer.data)
+
+
+# @api_view(['POST'])
+# def createNote(request):
+#     data = request.data
+#     note = Note.objects.create(
+#         body=data.get('body', '')
+#     )
+#     serializer = NoteSerializer(note, many=False)
+#     return Response(serializer.data)
+
+@api_view(['POST'])
+def createNote(request):
+    if request.method == 'POST':
+        serializer = NoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+@api_view(['PUT'])
+def updateNote(request, pk):
+    data = request.data
+    
+    if not isinstance(data, dict):
+        return Response({"error": "Invalid data format, expected JSON"}, status=400)
+    
+    note = Note.objects.get(id=pk)
+    serializer = NoteSerializer(instance=note, data=data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+def deleteNote(request, pk):
+    note = Note.objects.get(id=pk)
+    note.delete()
+    return Response('Note was deleted')
