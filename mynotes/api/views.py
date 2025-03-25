@@ -57,15 +57,6 @@ def getNote(request, pk):
     return Response(serializer.data)
 
 
-# @api_view(['POST'])
-# def createNote(request):
-#     data = request.data
-#     note = Note.objects.create(
-#         body=data.get('body', '')
-#     )
-#     serializer = NoteSerializer(note, many=False)
-#     return Response(serializer.data)
-
 @api_view(['POST'])
 def createNote(request):
     if request.method == 'POST':
@@ -77,19 +68,15 @@ def createNote(request):
 
 
 @api_view(['PUT'])
-def updateNote(request, pk):
+def updateNote (request, pk):
     data = request.data
-    
-    if not isinstance(data, dict):
-        return Response({"error": "Invalid data format, expected JSON"}, status=400)
-    
-    note = Note.objects.get(id=pk)
-    serializer = NoteSerializer(instance=note, data=data, partial=True)
+    note = Note.objects.get(id=pk) 
+    serializer = NoteSerializer(instance=note, data=data)
 
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=400)
+
+    return Response(serializer.data)
 
 
 @api_view(['DELETE'])
